@@ -18,7 +18,7 @@ This is the common workflow that we will use for every single feature/fix:
 4. **Test** - Verify it works in the browser. Implement unit testing later. Run `npm run build` and fix any errors
 5. **Iterate** - Iterate and change things if needed
 6. **Commit** - Only after build passes and everything works
-7. **Merge** - Merge to main
+7. **Merge** - Merge to main with a fast-forward (linear history, no merge commits). If main has moved on, rebase the feature branch onto main first, then merge.
 8. **Delete Branch** - Delete branch after merge
 9. **Review** - Review AI-generated code periodically and on demand.
 10. Mark as completed in @context/current-feature.md and add to history
@@ -28,6 +28,12 @@ Do NOT commit without permission and until the build passes. If build fails, fix
 ## Branching
 
 We will create a new branch for every feature/fix. Name branch **feature/[feature]** or **fix[fix]**, etc. Ask to delete the branch once merged.
+
+## Merging
+
+- Keep a **linear history** — no merge commits. Merge with `git merge --ff-only` (fast-forward only).
+- If `main` has advanced since the branch was created, `rebase` the feature branch onto `main` before merging so it can fast-forward.
+- The repo sets `merge.ff = only` locally as a guardrail, but that config is per-clone and not committed — this doc is the source of truth.
 
 ## Commits
 

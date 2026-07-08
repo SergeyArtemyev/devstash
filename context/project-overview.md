@@ -234,6 +234,23 @@ model ItemTag {
 - Syntax highlighting for code
 - Inspired by **Notion, Linear, Raycast**
 
+## Type Colors & Icons
+
+- Snippet Color: #3b82f6 (blue)
+- Snippet Icon: Code
+- Prompt Color: #8b5cf6 (purple)
+- Prompt Icon: Sparkles
+- Command Color: #f97316 (orange)
+- Command Icon: Terminal
+- Note Color: #fde047 (yellow)
+- Note Icon: StickyNote
+- File Color: #6b7280 (gray)
+- File Icon: File
+- Image Color: #ec4899 (pink)
+- Image Icon: Image
+- Link Color: #10b981 (emerald)
+- Link Icon: Link
+
 ### Screenshots
 
 Refer to the screenshots below as a base for the dashboard UI. It does not have to be exact. Use it as a reference:

@@ -1,30 +1,35 @@
 import { FolderHeart, FolderOpen, LayoutGrid, Star } from "lucide-react";
 
-import { collections, items } from "@/lib/mock-data";
+import type { CollectionWithMeta } from "@/lib/db/collections";
+import { items } from "@/lib/mock-data";
 
-const stats = [
-  { label: "Items", value: items.length, icon: LayoutGrid, color: "#3b82f6" },
-  {
-    label: "Collections",
-    value: collections.length,
-    icon: FolderOpen,
-    color: "#f97316",
-  },
-  {
-    label: "Favorite Items",
-    value: items.filter((item) => item.isFavorite).length,
-    icon: Star,
-    color: "#fde047",
-  },
-  {
-    label: "Favorite Collections",
-    value: collections.filter((collection) => collection.isFavorite).length,
-    icon: FolderHeart,
-    color: "#8b5cf6",
-  },
-];
+export function StatsCards({
+  collections,
+}: {
+  collections: CollectionWithMeta[];
+}) {
+  const stats = [
+    { label: "Items", value: items.length, icon: LayoutGrid, color: "#3b82f6" },
+    {
+      label: "Collections",
+      value: collections.length,
+      icon: FolderOpen,
+      color: "#f97316",
+    },
+    {
+      label: "Favorite Items",
+      value: items.filter((item) => item.isFavorite).length,
+      icon: Star,
+      color: "#fde047",
+    },
+    {
+      label: "Favorite Collections",
+      value: collections.filter((collection) => collection.isFavorite).length,
+      icon: FolderHeart,
+      color: "#8b5cf6",
+    },
+  ];
 
-export function StatsCards() {
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       {stats.map((stat) => {

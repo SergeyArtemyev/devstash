@@ -1,28 +1,17 @@
 import { File, MoreHorizontal, Star } from "lucide-react";
 
-import { items, type MockCollection } from "@/lib/mock-data";
-import { getItemType, TYPE_ICONS } from "@/lib/item-types";
-import { cn } from "@/lib/utils";
+import type { CollectionWithMeta } from "@/lib/db/collections";
+import { TYPE_ICONS } from "@/lib/item-types";
 
 export function CollectionCard({
   collection,
 }: {
-  collection: MockCollection;
+  collection: CollectionWithMeta;
 }) {
-  const typeIds = [
-    ...new Set(
-      items
-        .filter((item) => item.collectionId === collection.id)
-        .map((item) => item.typeId),
-    ),
-  ];
-
   return (
     <div
-      className={cn(
-        "rounded-xl border border-l-4 bg-card p-5 transition-colors hover:bg-accent/40",
-        collection.color,
-      )}
+      className="rounded-xl border border-l-4 bg-card p-5 transition-colors hover:bg-accent/40"
+      style={{ borderLeftColor: collection.accentColor ?? undefined }}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
@@ -41,16 +30,15 @@ export function CollectionCard({
         {collection.description}
       </p>
 
-      {typeIds.length > 0 && (
+      {collection.types.length > 0 && (
         <div className="mt-4 flex items-center gap-2.5">
-          {typeIds.map((typeId) => {
-            const type = getItemType(typeId);
-            const Icon = (type?.icon && TYPE_ICONS[type.icon]) || File;
+          {collection.types.map((type) => {
+            const Icon = (type.icon && TYPE_ICONS[type.icon]) || File;
             return (
               <Icon
-                key={typeId}
+                key={type.id}
                 className="size-4"
-                style={{ color: type?.color }}
+                style={{ color: type.color ?? undefined }}
               />
             );
           })}

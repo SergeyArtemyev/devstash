@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { Pin } from "lucide-react";
 
-import { collections, items } from "@/lib/mock-data";
+import { items } from "@/lib/mock-data";
+import { getCollections } from "@/lib/db/collections";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { ItemRow } from "@/components/dashboard/ItemRow";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const collections = await getCollections();
   const recentCollections = collections.slice(0, 6);
   const pinnedItems = items.filter((item) => item.isPinned);
   const recentItems = [...items]
@@ -25,7 +27,7 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      <StatsCards />
+      <StatsCards collections={collections} />
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">

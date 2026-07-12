@@ -41,6 +41,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# cli command log (personal learning reference, not committed)
+/cli-commands
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

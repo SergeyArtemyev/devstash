@@ -42,6 +42,16 @@ We will create a new branch for every feature/fix. Name branch **feature/[featur
 - Keep commits focused (one feature/fix per commit)
 - Never put "Generated With Claude" in the commit messages
 
+## CLI Command Log
+
+The user is learning the terminal/git tooling, so keep a running reference of the CLI commands you use.
+
+- Store every **unique** command in `cli-commands/commands.md` at the repo root (create the folder/file if missing). This folder is git-ignored.
+- Log a command the first time you use it. Skip duplicates — if an equivalent entry already exists, don't add it again.
+- Log **both** individual commands **and** the concatenated/chained one-liners you run (commands joined with `&&`, `|`, `;`, `||`, subshells, etc.). You often chain several commands in a single call — capture the full chain as its own entry, and break out any individual sub-command that's useful on its own and not already logged.
+- For each entry include: the command itself (generalize obvious placeholders like branch names), a one-line plain-English explanation, and a note of any notable flags or operators used (e.g. what `&&` or `| grep` is doing in the chain).
+- Group related commands under headings (e.g. Git, npm, Prisma, Shell, Chained/Combos) and keep the file tidy.
+
 ## When Stuck
 
 - If something isn't working after 2-3 attempts, stop and explain the issue

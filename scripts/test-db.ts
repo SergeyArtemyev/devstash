@@ -25,6 +25,54 @@ async function main() {
 
   console.log("📊 Row counts:");
   console.table({ users, items, itemTypes, collections, tags });
+
+  // Fetch and display the seeded demo data.
+  const demo = await prisma.user.findUnique({
+    where: { email: "demo@devstash.io" },
+    include: {
+      collections: {
+        orderBy: { name: "asc" },
+        include: {
+          items: {
+            orderBy: { title: "asc" },
+            include: { type: { select: { name: true } } },
+          },
+        },
+      },
+    },
+  });
+
+  if (!demo) {
+    console.log("\n⚠️  No demo user found. Run `npx prisma db seed` first.");
+    return;
+  }
+
+  console.log("\n👤 Demo user:");
+  console.table({
+    name: demo.name,
+    email: demo.email,
+    isPro: demo.isPro,
+    emailVerified: demo.emailVerified?.toISOString() ?? null,
+    passwordHashed: Boolean(demo.password),
+  });
+
+  console.log(`\n📚 Collections (${demo.collections.length}):`);
+  console.table(
+    demo.collections.map((c) => ({
+      collection: c.name,
+      description: c.description,
+      favorite: c.isFavorite,
+      items: c.items.length,
+    })),
+  );
+
+  console.log("\n🗂️  Items by collection:");
+  for (const c of demo.collections) {
+    console.log(`\n  ${c.name}`);
+    for (const item of c.items) {
+      console.log(`    • [${item.type.name}] ${item.title}`);
+    }
+  }
 }
 
 main()

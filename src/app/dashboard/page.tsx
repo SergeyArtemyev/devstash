@@ -1,22 +1,20 @@
 import Link from "next/link";
 import { Pin } from "lucide-react";
 
-import { items } from "@/lib/mock-data";
 import { getCollections } from "@/lib/db/collections";
+import { getItemStats, getPinnedItems, getRecentItems } from "@/lib/db/items";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { ItemRow } from "@/components/dashboard/ItemRow";
 
 export default async function DashboardPage() {
-  const collections = await getCollections();
+  const [collections, itemStats, pinnedItems, recentItems] = await Promise.all([
+    getCollections(),
+    getItemStats(),
+    getPinnedItems(),
+    getRecentItems(),
+  ]);
   const recentCollections = collections.slice(0, 6);
-  const pinnedItems = items.filter((item) => item.isPinned);
-  const recentItems = [...items]
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-    )
-    .slice(0, 10);
 
   return (
     <div className="mx-auto max-w-6xl space-y-10 p-6 md:p-8">
@@ -27,7 +25,7 @@ export default async function DashboardPage() {
         </p>
       </header>
 
-      <StatsCards collections={collections} />
+      <StatsCards collections={collections} itemStats={itemStats} />
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">

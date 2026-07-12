@@ -1,15 +1,22 @@
 import { FolderHeart, FolderOpen, LayoutGrid, Star } from "lucide-react";
 
 import type { CollectionWithMeta } from "@/lib/db/collections";
-import { items } from "@/lib/mock-data";
+import type { ItemStats } from "@/lib/db/items";
 
 export function StatsCards({
   collections,
+  itemStats,
 }: {
   collections: CollectionWithMeta[];
+  itemStats: ItemStats;
 }) {
   const stats = [
-    { label: "Items", value: items.length, icon: LayoutGrid, color: "#3b82f6" },
+    {
+      label: "Items",
+      value: itemStats.total,
+      icon: LayoutGrid,
+      color: "#3b82f6",
+    },
     {
       label: "Collections",
       value: collections.length,
@@ -18,7 +25,7 @@ export function StatsCards({
     },
     {
       label: "Favorite Items",
-      value: items.filter((item) => item.isFavorite).length,
+      value: itemStats.favorites,
       icon: Star,
       color: "#fde047",
     },

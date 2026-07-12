@@ -1,24 +1,23 @@
 import { File, Pin, Star } from "lucide-react";
 
-import type { MockItem } from "@/lib/mock-data";
-import { getItemType, TYPE_ICONS } from "@/lib/item-types";
+import type { ItemWithMeta } from "@/lib/db/items";
+import { TYPE_ICONS } from "@/lib/item-types";
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
+function formatDate(date: Date) {
+  return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     timeZone: "UTC",
   });
 }
 
-export function ItemRow({ item }: { item: MockItem }) {
-  const type = getItemType(item.typeId);
-  const Icon = (type?.icon && TYPE_ICONS[type.icon]) || File;
+export function ItemRow({ item }: { item: ItemWithMeta }) {
+  const Icon = (item.type.icon && TYPE_ICONS[item.type.icon]) || File;
 
   return (
     <div className="flex gap-4 rounded-xl border bg-card p-4 transition-colors hover:bg-accent/40">
       <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-        <Icon className="size-5" style={{ color: type?.color }} />
+        <Icon className="size-5" style={{ color: item.type.color ?? undefined }} />
       </div>
 
       <div className="min-w-0 flex-1">

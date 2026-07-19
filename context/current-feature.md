@@ -1,22 +1,18 @@
-# Current Feature: Add Pro Badge to Sidebar
+# Current Feature
+
+_No active feature. Document the next feature/fix here before starting._
 
 ## Status
 
-In Progress
+Not started
 
 ## Goals
 
-- Add a "PRO" badge to the **File** and **Image** item types in the sidebar Types list
-- Use a shadcn/ui component (Badge) for the badge
-- Keep the badge clean and subtle (not loud/distracting)
-- Render the label as "PRO" in all uppercase
+-
 
 ## Notes
 
-- Spec: `context/features/add-pro-badge-sidebar.md`
-- File uploads / images are Pro-tier features per the project spec, so these two types get the badge.
-- Sidebar Types are rendered in `SidebarBody` (driven by `getItemTypes()` DB data). Badge keys off the DB type name, which is **plural** per the seed (`Files`, `Images`).
-- `Badge` shadcn component may need adding via the shadcn CLI if not already present.
+-
 
 ## History
 
@@ -31,3 +27,4 @@ In Progress
 - Dashboard Collections — replaced the mock collection data in the dashboard main area with live Neon/Prisma data. Added `src/lib/db/collections.ts` (`getCollections()` scoped to the seeded demo user by email, ordered favorites-then-`updatedAt` desc) returning `CollectionWithMeta` (id/name/description/isFavorite, `itemCount`, distinct `types` ordered by usage, and `accentColor` = most-used type's color). Made `DashboardPage` an async server component that awaits `getCollections()`; `CollectionCard` now takes `CollectionWithMeta`, derives its left-border color from `accentColor` (inline `borderLeftColor`, matching the existing inline-color pattern) and renders type icons from the DB `types` list via `TYPE_ICONS`; `StatsCards` takes a `collections` prop and derives the Collections/Favorite Collections stats from DB. Notes: Pinned/Recent Items sections + their stats still use mock data (items feature comes later); build + lint pass.
 - Dashboard Items — replaced the remaining mock item data (Pinned + Recent Items sections and their stats) in the dashboard main area with live Neon/Prisma data. Added `src/lib/db/items.ts` (scoped to the seeded demo user): `getPinnedItems()` (isPinned, `updatedAt` desc), `getRecentItems(limit=10)` (`updatedAt` desc), and `getItemStats()` (parallel `count`s for total + favorites), all returning/using `ItemWithMeta` (id/title/description/isFavorite/isPinned/`updatedAt: Date`, embedded `type` {id,name,icon,color}, and `tags: string[]` flattened from the `ItemTag`→`Tag` join). Used a shared `itemSelect` (`satisfies Prisma.ItemSelect`) + `Prisma.ItemGetPayload` for a typed `toItemWithMeta` mapper (no `any`). `DashboardPage` now `Promise.all`s collections + item stats + pinned + recent; `ItemRow` takes `ItemWithMeta` (icon/color straight from `item.type`, `formatDate` takes a `Date`); `StatsCards` takes an `itemStats` prop for the Items/Favorite Items counts. Pinned section already hid itself when empty. Notes: tags aren't seeded yet so the tag row renders empty for now (guarded by `tags.length > 0`); `getItemType` in `item-types.ts` is now unused but left in place (still imports from mock-data, which the Sidebar also uses); build + lint pass. The harmless `pg`/`sslmode` deprecation warning is unchanged (connection-string concern, out of scope).
 - Stats & Sidebar — drove the dashboard **sidebar** from live Neon/Prisma data instead of `src/lib/mock-data.ts` (spec: `context/features/stats-sidebar-spec.md`; the main-area stats already came from the DB via the prior two entries). Added `getItemTypes()` to `src/lib/db/items.ts` returning `ItemTypeWithCount` (system types + per-type count of the demo user's items) via a filtered relation `_count`, sorted by an explicit `SYSTEM_TYPE_ORDER` array (ItemType has no timestamp/sort column, and id-alphabetical would scramble the UI order). Made `dashboard/layout.tsx` an async server component that `Promise.all`s `getItemTypes()` + `getCollections()` and passes them to `Sidebar` as props; `Sidebar`/`SidebarBody` now take `itemTypes`/`collections` props (favorite vs recent split moved inside the body) and no longer import collections/itemTypes from mock-data. Types render icon (via `TYPE_ICONS`, `File` fallback) + DB color + count, linking to `/items/<name-lowercased>`. Favorites keep the star; **recent** collections now show a **colored circle** using `CollectionWithMeta.accentColor` (most-used type color; bordered muted circle when a collection is empty/`null`). Added a **"View all collections"** link (→ `/collections`) under the list. Notes: the user footer still uses the `currentUser` mock (out of spec — auth not wired yet); build + lint pass, `/dashboard` prerenders (DB fetch runs at build time).
+- Add Pro Badge to Sidebar — added a subtle "PRO" badge to the **Files** and **Images** item types in the sidebar Types list (spec: `context/features/add-pro-badge-sidebar.md`; these are Pro-tier upload features). Installed the shadcn `Badge` component (`src/components/ui/badge.tsx`) and rendered it in `SidebarBody` between the type name and count when the type name is in `PRO_TYPE_NAMES` (`{"Files","Images"}` — a module-level `Set` alongside `TYPE_ICONS`), using the `outline` variant shrunk to `h-4 px-1 text-[9px]` muted-foreground for a quiet look, label literally `PRO`. Notes: the badge matches on the DB `type.name`, which is **plural** per the seed (`Files`/`Images`) — an initial pass used the singular names and never matched; it's stringly-typed, so a future `ItemType.isPro` flag (or matching on the stable `type_file`/`type_image` ids) would be more robust. Build + lint pass.

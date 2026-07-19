@@ -29,6 +29,23 @@ export interface ItemStats {
   favorites: number;
 }
 
+export interface ItemTypeWithCount extends ItemTypeMeta {
+  /** Number of the current user's items of this type. */
+  count: number;
+}
+
+// Canonical display order for the built-in system types (ItemType has no
+// timestamp/sort column, so define the order explicitly to match the UI).
+const SYSTEM_TYPE_ORDER = [
+  "type_snippet",
+  "type_prompt",
+  "type_command",
+  "type_note",
+  "type_file",
+  "type_image",
+  "type_link",
+];
+
 const itemSelect = {
   id: true,
   title: true,
@@ -76,6 +93,38 @@ export async function getRecentItems(limit = 10): Promise<ItemWithMeta[]> {
   });
 
   return items.map(toItemWithMeta);
+}
+
+/**
+ * System item types with a per-type count of the current user's items, in the
+ * canonical display order. Used by the sidebar Types list.
+ */
+export async function getItemTypes(): Promise<ItemTypeWithCount[]> {
+  const types = await prisma.itemType.findMany({
+    where: { isSystem: true },
+    select: {
+      id: true,
+      name: true,
+      icon: true,
+      color: true,
+      _count: {
+        select: { items: { where: { user: { email: DEMO_USER_EMAIL } } } },
+      },
+    },
+  });
+
+  return types
+    .map((type) => ({
+      id: type.id,
+      name: type.name,
+      icon: type.icon,
+      color: type.color,
+      count: type._count.items,
+    }))
+    .sort(
+      (a, b) =>
+        SYSTEM_TYPE_ORDER.indexOf(a.id) - SYSTEM_TYPE_ORDER.indexOf(b.id),
+    );
 }
 
 /** Total and favorite item counts for the current user. */

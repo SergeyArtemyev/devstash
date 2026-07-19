@@ -19,7 +19,9 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { collections, currentUser, itemTypes } from "@/lib/mock-data";
+import { currentUser } from "@/lib/mock-data";
+import type { CollectionWithMeta } from "@/lib/db/collections";
+import type { ItemTypeWithCount } from "@/lib/db/items";
 import { useSidebar } from "./sidebar-provider";
 
 const TYPE_ICONS: Record<string, LucideIcon> = {
@@ -31,9 +33,6 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
   Image,
   Link: LinkIcon,
 };
-
-const favoriteCollections = collections.filter((c) => c.isFavorite);
-const recentCollections = collections.filter((c) => !c.isFavorite);
 
 const userInitials = currentUser.name
   .split(" ")
@@ -68,7 +67,18 @@ function CollapsibleGroup({
   );
 }
 
-function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarBody({
+  itemTypes,
+  collections,
+  onNavigate,
+}: {
+  itemTypes: ItemTypeWithCount[];
+  collections: CollectionWithMeta[];
+  onNavigate?: () => void;
+}) {
+  const favoriteCollections = collections.filter((c) => c.isFavorite);
+  const recentCollections = collections.filter((c) => !c.isFavorite);
+
   return (
     <div className="flex h-full w-64 flex-col">
       {/* Logo */}
@@ -83,7 +93,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
       <nav className="flex-1 space-y-4 overflow-y-auto px-2 py-2">
         <CollapsibleGroup label="Types">
           {itemTypes.map((type) => {
-            const Icon = TYPE_ICONS[type.icon] ?? File;
+            const Icon = TYPE_ICONS[type.icon ?? ""] ?? File;
             return (
               <Link
                 key={type.id}
@@ -93,7 +103,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
               >
                 <Icon
                   className="size-4 shrink-0"
-                  style={{ color: type.color }}
+                  style={type.color ? { color: type.color } : undefined}
                 />
                 <span className="flex-1 truncate">{type.name}</span>
                 <span className="text-xs text-muted-foreground">
@@ -139,7 +149,18 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                   onClick={onNavigate}
                   className="flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 >
-                  <Folder className="size-4 shrink-0 text-muted-foreground" />
+                  <span
+                    className={cn(
+                      "size-2.5 shrink-0 rounded-full",
+                      !col.accentColor && "border border-muted-foreground/40",
+                    )}
+                    style={
+                      col.accentColor
+                        ? { backgroundColor: col.accentColor }
+                        : undefined
+                    }
+                    aria-hidden
+                  />
                   <span className="flex-1 truncate">{col.name}</span>
                   <span className="text-xs text-muted-foreground">
                     {col.itemCount}
@@ -148,6 +169,14 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
               ))}
             </>
           )}
+
+          <Link
+            href="/collections"
+            onClick={onNavigate}
+            className="mt-1 block rounded-md px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
+            View all collections
+          </Link>
         </CollapsibleGroup>
       </nav>
 
@@ -174,7 +203,13 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-export function Sidebar() {
+export function Sidebar({
+  itemTypes,
+  collections,
+}: {
+  itemTypes: ItemTypeWithCount[];
+  collections: CollectionWithMeta[];
+}) {
   const { open, openMobile, setOpenMobile } = useSidebar();
 
   return (
@@ -186,7 +221,7 @@ export function Sidebar() {
           open ? "w-64" : "w-0 border-r-0",
         )}
       >
-        <SidebarBody />
+        <SidebarBody itemTypes={itemTypes} collections={collections} />
       </aside>
 
       {/* Mobile drawer */}
@@ -198,7 +233,11 @@ export function Sidebar() {
             aria-hidden
           />
           <aside className="absolute inset-y-0 left-0 border-r border-sidebar-border bg-sidebar shadow-xl">
-            <SidebarBody onNavigate={() => setOpenMobile(false)} />
+            <SidebarBody
+              itemTypes={itemTypes}
+              collections={collections}
+              onNavigate={() => setOpenMobile(false)}
+            />
           </aside>
         </div>
       )}

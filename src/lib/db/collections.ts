@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/prisma";
+import { cache } from "react";
 
-// Auth is not wired up yet — scope dashboard data to the seeded demo user.
-const DEMO_USER_EMAIL = "demo@devstash.io";
+import { prisma } from "@/lib/prisma";
+import { DEMO_USER_EMAIL } from "@/lib/current-user";
 
 export interface CollectionType {
   id: string;
@@ -26,7 +26,7 @@ export interface CollectionWithMeta {
  * Fetch the current user's collections with per-collection item counts and the
  * set of item types they contain (ordered by how often each type is used).
  */
-export async function getCollections(): Promise<CollectionWithMeta[]> {
+export const getCollections = cache(async (): Promise<CollectionWithMeta[]> => {
   const collections = await prisma.collection.findMany({
     where: { user: { email: DEMO_USER_EMAIL } },
     orderBy: [{ isFavorite: "desc" }, { updatedAt: "desc" }],
@@ -62,4 +62,4 @@ export async function getCollections(): Promise<CollectionWithMeta[]> {
       accentColor: sorted[0]?.type.color ?? null,
     };
   });
-}
+});

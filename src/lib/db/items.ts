@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@/generated/prisma/client";
+import { cache } from "react";
 
-// Auth is not wired up yet — scope dashboard data to the seeded demo user.
-const DEMO_USER_EMAIL = "demo@devstash.io";
+import { prisma } from "@/lib/prisma";
+import { DEMO_USER_EMAIL } from "@/lib/current-user";
+import type { Prisma } from "@/generated/prisma/client";
 
 export interface ItemTypeMeta {
   id: string;
@@ -73,7 +73,7 @@ function toItemWithMeta(item: ItemRow): ItemWithMeta {
 }
 
 /** Pinned items for the current user, most recently updated first. */
-export async function getPinnedItems(): Promise<ItemWithMeta[]> {
+export const getPinnedItems = cache(async (): Promise<ItemWithMeta[]> => {
   const items = await prisma.item.findMany({
     where: { user: { email: DEMO_USER_EMAIL }, isPinned: true },
     orderBy: { updatedAt: "desc" },
@@ -81,25 +81,27 @@ export async function getPinnedItems(): Promise<ItemWithMeta[]> {
   });
 
   return items.map(toItemWithMeta);
-}
+});
 
 /** The current user's most recently updated items. */
-export async function getRecentItems(limit = 10): Promise<ItemWithMeta[]> {
-  const items = await prisma.item.findMany({
-    where: { user: { email: DEMO_USER_EMAIL } },
-    orderBy: { updatedAt: "desc" },
-    take: limit,
-    select: itemSelect,
-  });
+export const getRecentItems = cache(
+  async (limit = 10): Promise<ItemWithMeta[]> => {
+    const items = await prisma.item.findMany({
+      where: { user: { email: DEMO_USER_EMAIL } },
+      orderBy: { updatedAt: "desc" },
+      take: limit,
+      select: itemSelect,
+    });
 
-  return items.map(toItemWithMeta);
-}
+    return items.map(toItemWithMeta);
+  },
+);
 
 /**
  * System item types with a per-type count of the current user's items, in the
  * canonical display order. Used by the sidebar Types list.
  */
-export async function getItemTypes(): Promise<ItemTypeWithCount[]> {
+export const getItemTypes = cache(async (): Promise<ItemTypeWithCount[]> => {
   const types = await prisma.itemType.findMany({
     where: { isSystem: true },
     select: {
@@ -125,10 +127,10 @@ export async function getItemTypes(): Promise<ItemTypeWithCount[]> {
       (a, b) =>
         SYSTEM_TYPE_ORDER.indexOf(a.id) - SYSTEM_TYPE_ORDER.indexOf(b.id),
     );
-}
+});
 
 /** Total and favorite item counts for the current user. */
-export async function getItemStats(): Promise<ItemStats> {
+export const getItemStats = cache(async (): Promise<ItemStats> => {
   const where = { user: { email: DEMO_USER_EMAIL } } satisfies Prisma.ItemWhereInput;
 
   const [total, favorites] = await Promise.all([
@@ -137,4 +139,4 @@ export async function getItemStats(): Promise<ItemStats> {
   ]);
 
   return { total, favorites };
-}
+});

@@ -1,18 +1,22 @@
-# Current Feature
-
-_No active feature. Document the next feature/fix here before starting._
+# Current Feature: Add Pro Badge to Sidebar
 
 ## Status
 
-Not started
+In Progress
 
 ## Goals
 
--
+- Add a "PRO" badge to the **File** and **Image** item types in the sidebar Types list
+- Use a shadcn/ui component (Badge) for the badge
+- Keep the badge clean and subtle (not loud/distracting)
+- Render the label as "PRO" in all uppercase
 
 ## Notes
 
--
+- Spec: `context/features/add-pro-badge-sidebar.md`
+- File uploads / images are Pro-tier features per the project spec, so these two types get the badge.
+- Sidebar Types are rendered in `SidebarBody` (driven by `getItemTypes()` DB data). Badge keys off the DB type name, which is **plural** per the seed (`Files`, `Images`).
+- `Badge` shadcn component may need adding via the shadcn CLI if not already present.
 
 ## History
 

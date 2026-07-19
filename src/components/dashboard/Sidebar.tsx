@@ -20,9 +20,13 @@ import {
 
 import { cn } from "@/lib/utils";
 import { currentUser } from "@/lib/mock-data";
+import { Badge } from "@/components/ui/badge";
 import type { CollectionWithMeta } from "@/lib/db/collections";
 import type { ItemTypeWithCount } from "@/lib/db/items";
 import { useSidebar } from "./sidebar-provider";
+
+// Types that are Pro-only features (file uploads / images).
+const PRO_TYPE_NAMES = new Set(["Files", "Images"]);
 
 const TYPE_ICONS: Record<string, LucideIcon> = {
   Code,
@@ -106,6 +110,14 @@ function SidebarBody({
                   style={type.color ? { color: type.color } : undefined}
                 />
                 <span className="flex-1 truncate">{type.name}</span>
+                {PRO_TYPE_NAMES.has(type.name) && (
+                  <Badge
+                    variant="outline"
+                    className="h-4 rounded px-1 text-[9px] font-semibold tracking-wider text-muted-foreground"
+                  >
+                    PRO
+                  </Badge>
+                )}
                 <span className="text-xs text-muted-foreground">
                   {type.count}
                 </span>

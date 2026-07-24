@@ -28,3 +28,26 @@ Tailwind CSS v4 via the PostCSS plugin (`@tailwindcss/postcss`, configured in `p
 ### React Compiler
 
 The React Compiler is enabled (`reactCompiler: true` in `next.config.ts`, `babel-plugin-react-compiler`). Avoid manual `useMemo`/`useCallback`/`memo` for optimization — the compiler handles memoization automatically.
+
+## Neon MCP Usage
+
+When using the Neon MCP for this project, ALWAYS target the DevStash project and its
+**development** branch by default. Never touch production unless I explicitly say so.
+
+- **Project:** `devstash` (`projectId: curly-block-55226637`)
+- **Default branch:** `development` (`branchId: br-bitter-brook-at6obg54`)
+- **Production branch:** `production` (`branchId: br-shy-block-at5t2wqb`) — **OFF LIMITS**
+
+### Rules
+
+- Every Neon MCP call (`run_sql`, `run_sql_transaction`, schema/migration tools, etc.)
+  MUST pass `projectId: curly-block-55226637` and `branchId: br-bitter-brook-at6obg54`
+  unless I explicitly name a different branch.
+- NEVER run any operation — read or write — against the `production` branch
+  (`br-shy-block-at5t2wqb`) unless I explicitly say "production" in that request.
+  Do not infer it from context; require an explicit instruction each time.
+- Never run destructive SQL (`DROP`, `DELETE`, `TRUNCATE`, `UPDATE`/`INSERT` without
+  my go-ahead) or destructive branch/project tools without asking first — even on
+  development.
+- If I ask for something ambiguous about which branch, default to development and
+  say which branch you used.

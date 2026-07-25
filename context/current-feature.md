@@ -1,18 +1,26 @@
-# Current Feature
+# Current Feature: Auth Credentials — Email/Password Provider (Auth Phase 2)
 
-_No active feature. Document the next feature/fix here before starting._
+Spec: `context/features/auth-phase-2-spec.md`
 
 ## Status
 
-Not started
+In Progress
 
 ## Goals
 
--
+- Add a NextAuth Credentials provider for email/password sign-in alongside the existing GitHub OAuth.
+- Keep the split-config pattern: `auth.config.ts` declares the Credentials provider with an `authorize: () => null` placeholder; `auth.ts` overrides it with the real bcrypt validation (Prisma stays out of the proxy).
+- Confirm the `User.password` field exists in the Prisma schema; add it via `prisma migrate dev` if missing.
+- Add a registration API route at `POST /api/auth/register` that accepts `name`, `email`, `password`, `confirmPassword`; validates the passwords match; rejects an already-registered email; hashes with bcryptjs; creates the user; returns a success/error response.
+- Verify: register via curl, sign in with those credentials at `/api/auth/signin`, land on `/dashboard`, and confirm GitHub OAuth still works.
 
 ## Notes
 
--
+- bcryptjs is already installed (used by `prisma/seed.ts` at 12 rounds) — reuse the same cost factor.
+- The seeded demo user (`demo@devstash.io` / `12345678`) already has a hashed password, so it's a ready-made credentials sign-in test case.
+- Session strategy is JWT (set in `auth.ts`) — required for Credentials anyway, so no change needed.
+- Registration is an API route (not a Server Action) per the spec; validate the body with Zod per coding standards.
+- Still out of scope (Phase 3): custom sign-in/register UI, and replacing `DEMO_USER_EMAIL` in `src/lib/current-user.ts` + the mock sidebar user footer with the real session user.
 
 ## History
 

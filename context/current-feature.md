@@ -1,18 +1,35 @@
-# Current Feature
+# Current Feature: Auth Setup — NextAuth + GitHub Provider (Auth Phase 1)
 
-_No active feature. Document the next feature/fix here before starting._
+Spec: `context/features/auth-phase-1-spec.md`
 
 ## Status
 
-Not started
+Complete
 
 ## Goals
 
--
+- Install NextAuth v5 (`next-auth@beta`) and `@auth/prisma-adapter`
+- Set up the split auth config pattern for edge compatibility (`src/auth.config.ts` = providers only, no adapter; `src/auth.ts` = full config with Prisma adapter + JWT strategy)
+- Add the GitHub OAuth provider
+- Expose the route handlers at `src/app/api/auth/[...nextauth]/route.ts` (re-export `handlers` from `src/auth.ts`)
+- Protect `/dashboard/*` via the Next.js 16 proxy (`src/proxy.ts`), redirecting unauthenticated users to sign-in
+- Extend the `Session` type with `user.id` in `src/types/next-auth.d.ts`
+- Use NextAuth's built-in sign-in page for this phase (no custom UI)
 
 ## Notes
 
--
+- Use Context7 to verify the newest Auth.js v5 config and conventions before writing code.
+- Gotchas from the spec:
+  - Install `next-auth@beta` — `@latest` still resolves to v4
+  - Proxy file must live at `src/proxy.ts` (same level as `app/`)
+  - Named export only: `export const proxy = auth(...)`, not a default export
+  - `session: { strategy: "jwt" }` is required with the split config pattern
+  - Do **not** set `pages.signIn` — use NextAuth's default page
+- Env vars needed: `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
+- Prisma schema already has the NextAuth `Account` / `Session` / `VerificationToken` models and `User.password`, so the adapter should drop in without a migration (verify).
+- Manual test path: visit `/dashboard` → redirected to sign-in → "Sign in with GitHub" → back at `/dashboard`.
+- Out of scope for this phase: credentials/email+password login, custom sign-in UI, replacing the hardcoded `DEMO_USER_EMAIL` in `src/lib/current-user.ts` and the mock sidebar user footer (later phases).
+- References: https://authjs.dev/getting-started/installation#edge-compatibility · https://authjs.dev/getting-started/adapters/prisma
 
 ## History
 

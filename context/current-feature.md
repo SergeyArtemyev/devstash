@@ -1,35 +1,18 @@
-# Current Feature: Auth Setup — NextAuth + GitHub Provider (Auth Phase 1)
+# Current Feature
 
-Spec: `context/features/auth-phase-1-spec.md`
+_No active feature. Document the next feature/fix here before starting._
 
 ## Status
 
-Complete
+Not started
 
 ## Goals
 
-- Install NextAuth v5 (`next-auth@beta`) and `@auth/prisma-adapter`
-- Set up the split auth config pattern for edge compatibility (`src/auth.config.ts` = providers only, no adapter; `src/auth.ts` = full config with Prisma adapter + JWT strategy)
-- Add the GitHub OAuth provider
-- Expose the route handlers at `src/app/api/auth/[...nextauth]/route.ts` (re-export `handlers` from `src/auth.ts`)
-- Protect `/dashboard/*` via the Next.js 16 proxy (`src/proxy.ts`), redirecting unauthenticated users to sign-in
-- Extend the `Session` type with `user.id` in `src/types/next-auth.d.ts`
-- Use NextAuth's built-in sign-in page for this phase (no custom UI)
+-
 
 ## Notes
 
-- Use Context7 to verify the newest Auth.js v5 config and conventions before writing code.
-- Gotchas from the spec:
-  - Install `next-auth@beta` — `@latest` still resolves to v4
-  - Proxy file must live at `src/proxy.ts` (same level as `app/`)
-  - Named export only: `export const proxy = auth(...)`, not a default export
-  - `session: { strategy: "jwt" }` is required with the split config pattern
-  - Do **not** set `pages.signIn` — use NextAuth's default page
-- Env vars needed: `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
-- Prisma schema already has the NextAuth `Account` / `Session` / `VerificationToken` models and `User.password`, so the adapter should drop in without a migration (verify).
-- Manual test path: visit `/dashboard` → redirected to sign-in → "Sign in with GitHub" → back at `/dashboard`.
-- Out of scope for this phase: credentials/email+password login, custom sign-in UI, replacing the hardcoded `DEMO_USER_EMAIL` in `src/lib/current-user.ts` and the mock sidebar user footer (later phases).
-- References: https://authjs.dev/getting-started/installation#edge-compatibility · https://authjs.dev/getting-started/adapters/prisma
+-
 
 ## History
 
@@ -46,3 +29,4 @@ Complete
 - Stats & Sidebar — drove the dashboard **sidebar** from live Neon/Prisma data instead of `src/lib/mock-data.ts` (spec: `context/features/stats-sidebar-spec.md`; the main-area stats already came from the DB via the prior two entries). Added `getItemTypes()` to `src/lib/db/items.ts` returning `ItemTypeWithCount` (system types + per-type count of the demo user's items) via a filtered relation `_count`, sorted by an explicit `SYSTEM_TYPE_ORDER` array (ItemType has no timestamp/sort column, and id-alphabetical would scramble the UI order). Made `dashboard/layout.tsx` an async server component that `Promise.all`s `getItemTypes()` + `getCollections()` and passes them to `Sidebar` as props; `Sidebar`/`SidebarBody` now take `itemTypes`/`collections` props (favorite vs recent split moved inside the body) and no longer import collections/itemTypes from mock-data. Types render icon (via `TYPE_ICONS`, `File` fallback) + DB color + count, linking to `/items/<name-lowercased>`. Favorites keep the star; **recent** collections now show a **colored circle** using `CollectionWithMeta.accentColor` (most-used type color; bordered muted circle when a collection is empty/`null`). Added a **"View all collections"** link (→ `/collections`) under the list. Notes: the user footer still uses the `currentUser` mock (out of spec — auth not wired yet); build + lint pass, `/dashboard` prerenders (DB fetch runs at build time).
 - Add Pro Badge to Sidebar — added a subtle "PRO" badge to the **Files** and **Images** item types in the sidebar Types list (spec: `context/features/add-pro-badge-sidebar.md`; these are Pro-tier upload features). Installed the shadcn `Badge` component (`src/components/ui/badge.tsx`) and rendered it in `SidebarBody` between the type name and count when the type name is in `PRO_TYPE_NAMES` (`{"Files","Images"}` — a module-level `Set` alongside `TYPE_ICONS`), using the `outline` variant shrunk to `h-4 px-1 text-[9px]` muted-foreground for a quiet look, label literally `PRO`. Notes: the badge matches on the DB `type.name`, which is **plural** per the seed (`Files`/`Images`) — an initial pass used the singular names and never matched; it's stringly-typed, so a future `ItemType.isPro` flag (or matching on the stable `type_file`/`type_image` ids) would be more robust. Build + lint pass.
 - Quick Wins Cleanup — two low-risk cleanups from the codebase audit, no user-facing changes. (1) Wrapped all `src/lib/db/*` read functions (`getCollections`, `getPinnedItems`, `getRecentItems`, `getItemTypes`, `getItemStats`) in React's `cache()` so repeated calls within a single render pass are request-deduped — `getCollections()` was previously called once in `dashboard/layout.tsx` and again in `dashboard/page.tsx`, running the query twice per dashboard load (Prisma calls aren't auto-deduped like `fetch()`). `cache()` is transparent to callers, so no call-site changes. (2) Extracted the duplicated hardcoded `DEMO_USER_EMAIL = "demo@devstash.io"` constant (plus its "auth not wired up yet" comment) out of both `items.ts` and `collections.ts` into a shared `src/lib/current-user.ts`, imported from both — one place to change when real auth lands. Notes: deliberately out of scope — audit #2 (unbounded queries/pagination), #4 (splitting `SidebarBody`), #5 (dead `getItemType`), #6 (mock user footer, blocked on auth); build + lint pass, `/dashboard` behavior identical.
+- Auth Setup — NextAuth + GitHub Provider (Auth Phase 1) — wired up Auth.js v5 (`next-auth@5.0.0-beta.32` + `@auth/prisma-adapter`) with GitHub OAuth and route protection (spec: `context/features/auth-phase-1-spec.md`). Used the documented **split config** pattern: `src/auth.config.ts` holds the GitHub provider plus the `jwt`/`session` callbacks that copy `user.id` onto the token (no adapter, `satisfies NextAuthConfig`), and `src/auth.ts` spreads it alongside `PrismaAdapter(prisma)` (reusing the existing singleton from `src/lib/prisma.ts`) and `session: { strategy: "jwt" }` — required because the proxy has no adapter and so can't look sessions up in the DB. Route handlers re-exported at `src/app/api/auth/[...nextauth]/route.ts` (`export const { GET, POST } = handlers`). `src/proxy.ts` uses the named `export const proxy = auth(...)` with matcher `["/dashboard", "/dashboard/:path*"]` (both entries — `/dashboard` bare plus descendants) and redirects unauthenticated visitors to NextAuth's **default** sign-in page with a `callbackUrl`; no `pages.signIn` override. Added `AUTH_SECRET`/`AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET` to `.env.example` and git-ignored `/.playwright-mcp`. **Gotcha worth remembering:** the JWT module augmentation in `src/types/next-auth.d.ts` must target `@auth/core/jwt`, **not** `next-auth/jwt` — the latter is only `export * from "@auth/core/jwt"`, so augmenting it declares a *separate* interface rather than merging, and the build failed with `Type '{}' is not assignable to type 'string'` (truthiness-narrowed `unknown`) until it was repointed. The `Session` augmentation on `next-auth` works as documented. **Also note:** in Next.js 16 `proxy.ts` runs on the **nodejs** runtime (edge isn't supported there), so the split config is no longer strictly needed for edge compatibility — kept anyway to keep Prisma out of the proxy and match convention. No Prisma migration needed (Account/Session/VerificationToken already in the schema). Verified: build + lint pass, proxy registers as `ƒ Proxy (Middleware)`, `GET /dashboard` → `307` → `/api/auth/signin?callbackUrl=%2Fdashboard` (curl + browser), sign-in page renders "Sign in with GitHub", and the signin POST redirects to `github.com/login/oauth/authorize` with the right `client_id`/`redirect_uri`/PKCE challenge. **Not verified:** the full OAuth round-trip back to `/dashboard` (needs a real GitHub login) — confirm that plus the `User`/`Account` rows landing in the Neon `development` branch. Out of scope (later phases): credentials login, custom sign-in UI, and replacing `DEMO_USER_EMAIL` in `src/lib/current-user.ts` + the mock sidebar user footer, so the dashboard still renders seeded demo data after signing in.

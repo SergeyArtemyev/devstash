@@ -50,3 +50,6 @@ next-env.d.ts
 
 # playwright mcp output (screenshots, page snapshots)
 /.playwright-mcp
+
+# add mcp settings to git igrnore
+.mcp.json

@@ -10,7 +10,6 @@ import {
   Image,
   Layers,
   Link as LinkIcon,
-  Settings,
   Sparkles,
   Star,
   StickyNote,
@@ -19,10 +18,11 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { currentUser } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
+import type { AvatarUser } from "@/components/user/UserAvatar";
 import type { CollectionWithMeta } from "@/lib/db/collections";
 import type { ItemTypeWithCount } from "@/lib/db/items";
+import { SidebarUser } from "./SidebarUser";
 import { useSidebar } from "./sidebar-provider";
 
 // Types that are Pro-only features (file uploads / images).
@@ -37,13 +37,6 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
   Image,
   Link: LinkIcon,
 };
-
-const userInitials = currentUser.name
-  .split(" ")
-  .map((part) => part[0])
-  .join("")
-  .slice(0, 2)
-  .toUpperCase();
 
 function CollapsibleGroup({
   label,
@@ -74,10 +67,12 @@ function CollapsibleGroup({
 function SidebarBody({
   itemTypes,
   collections,
+  user,
   onNavigate,
 }: {
   itemTypes: ItemTypeWithCount[];
   collections: CollectionWithMeta[];
+  user: AvatarUser;
   onNavigate?: () => void;
 }) {
   const favoriteCollections = collections.filter((c) => c.isFavorite);
@@ -192,25 +187,7 @@ function SidebarBody({
         </CollapsibleGroup>
       </nav>
 
-      {/* User */}
-      <div className="flex shrink-0 items-center gap-3 border-t border-sidebar-border p-3">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium">
-          {userInitials}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{currentUser.name}</p>
-          <p className="truncate text-xs text-muted-foreground">
-            {currentUser.email}
-          </p>
-        </div>
-        <button
-          type="button"
-          aria-label="Settings"
-          className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
-        >
-          <Settings className="size-4" />
-        </button>
-      </div>
+      <SidebarUser user={user} onNavigate={onNavigate} />
     </div>
   );
 }
@@ -218,9 +195,11 @@ function SidebarBody({
 export function Sidebar({
   itemTypes,
   collections,
+  user,
 }: {
   itemTypes: ItemTypeWithCount[];
   collections: CollectionWithMeta[];
+  user: AvatarUser;
 }) {
   const { open, openMobile, setOpenMobile } = useSidebar();
 
@@ -233,7 +212,11 @@ export function Sidebar({
           open ? "w-64" : "w-0 border-r-0",
         )}
       >
-        <SidebarBody itemTypes={itemTypes} collections={collections} />
+        <SidebarBody
+          itemTypes={itemTypes}
+          collections={collections}
+          user={user}
+        />
       </aside>
 
       {/* Mobile drawer */}
@@ -248,6 +231,7 @@ export function Sidebar({
             <SidebarBody
               itemTypes={itemTypes}
               collections={collections}
+              user={user}
               onNavigate={() => setOpenMobile(false)}
             />
           </aside>

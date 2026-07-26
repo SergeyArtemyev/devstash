@@ -1,18 +1,39 @@
-# Current Feature
+# Current Feature: Auth UI — Sign In, Register & Sign Out (Auth Phase 3)
 
-_No active feature. Document the next feature/fix here before starting._
+Spec: `context/features/auth-phase-3-spec.md`
+
+Replace the NextAuth default pages with custom UI, and drive the sidebar user footer from the real session user.
 
 ## Status
 
-Not started
+In Progress
 
 ## Goals
 
--
+- Custom sign-in page at `/sign-in`: email + password fields, "Sign in with GitHub" button, link to `/register`, form validation and error display.
+- Custom register page at `/register`: name, email, password, confirm password; validation (email format, passwords match); submits to `POST /api/auth/register`; redirects to `/sign-in` on success.
+- Sidebar footer driven by the real session user: avatar (GitHub `image` or initials fallback), user name, and a dropdown on avatar click containing "Sign out".
+- Clicking the avatar/icon navigates to `/profile`.
+- Reusable avatar component handling both the image and initials cases (e.g. "Brad Traversy" → "BT").
 
 ## Notes
 
--
+- Point NextAuth at the custom pages (`pages.signIn`) so the proxy redirect from `/dashboard` lands on `/sign-in` instead of `/api/auth/signin`.
+- Reuse the existing Zod schemas in `src/lib/auth-schemas.ts` (`signInSchema`, `registerSchema`) for client-side validation; the register endpoint already returns the `{ success, data, error }` shape with 400/409 statuses.
+- Sidebar footer currently renders the `currentUser` mock ("John Doe") from `src/lib/mock-data.ts` — this replaces it.
+- Not in this spec (still open from Phase 2): replacing `DEMO_USER_EMAIL` in `src/lib/current-user.ts` so dashboard data is scoped to the signed-in user. Flag if it turns out to be entangled.
+- Spec says "verify avatar shows in top bar" in the testing steps but the requirement section says bottom of sidebar — going with the sidebar footer.
+- Leftover `test@test.com` user still in the dev DB from Phase 2.
+
+### Testing
+
+1. `/sign-in` renders the custom page.
+2. GitHub sign-in flow works.
+3. Email/password sign-in works.
+4. Avatar shows GitHub image or initials.
+5. Avatar click opens the dropdown.
+6. "Sign out" logs out and redirects.
+7. `/register` creates an account and redirects to `/sign-in`.
 
 ## History
 

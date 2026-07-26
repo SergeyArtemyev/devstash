@@ -9,14 +9,14 @@ const { auth } = NextAuth(authConfig);
 export const proxy = auth((req) => {
   if (req.auth) return;
 
-  // Send unauthenticated visitors to NextAuth's built-in sign-in page and
-  // bring them back to whatever they were trying to reach.
-  const signInUrl = new URL("/api/auth/signin", req.nextUrl.origin);
+  // Send unauthenticated visitors to the custom sign-in page and bring them
+  // back to whatever they were trying to reach.
+  const signInUrl = new URL("/sign-in", req.nextUrl.origin);
   signInUrl.searchParams.set("callbackUrl", req.nextUrl.pathname + req.nextUrl.search);
 
   return NextResponse.redirect(signInUrl);
 });
 
 export const config = {
-  matcher: ["/dashboard", "/dashboard/:path*"],
+  matcher: ["/dashboard", "/dashboard/:path*", "/profile", "/profile/:path*"],
 };

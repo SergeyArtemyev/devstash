@@ -7,6 +7,13 @@ import type { NextAuthConfig } from "next-auth";
 // route protection never pulls Prisma (and its TCP driver) into the proxy.
 // The full config lives in `src/auth.ts`.
 export default {
+  // Custom UI replaces the pages Auth.js renders by default. `error` points at
+  // the sign-in page too, so provider failures surface as `?error=<code>` on a
+  // form the user can retry from.
+  pages: {
+    signIn: "/sign-in",
+    error: "/sign-in",
+  },
   providers: [
     GitHub,
     // Placeholder only — declaring it here keeps the provider list (and so the
